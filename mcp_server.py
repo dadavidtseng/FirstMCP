@@ -3,7 +3,6 @@ from pydantic import Field
 
 mcp = FastMCP("DocumentMCP", log_level="ERROR")
 
-
 docs = {
     "deposition.md": "This deposition covers the testimony of Angela Smith, P.E.",
     "report.pdf": "The report details the state of a 20m condenser tower.",
@@ -13,11 +12,11 @@ docs = {
     "spec.txt": "These specifications define the technical requirements for the equipment.",
 }
 
+
 @mcp.tool(
     name="read_doc_contents",
     description="Read the content of a document and return it as a string."
 )
-
 def read_document(
         doc_id: str = Field(description="Id of the document to read"),
 ):
@@ -26,11 +25,11 @@ def read_document(
 
     return docs[doc_id]
 
+
 @mcp.tool(
     name="edit_document",
     description="Edit the document by replacing a string in the documents content with a new string"
 )
-
 def edit_document(
         doc_id: str = Field(description="Id of the document that will be edited"),
         old_str: str = Field(description="The text to replace. Must match exactly, including whitespace"),
@@ -41,8 +40,24 @@ def edit_document(
 
     docs[doc_id] = docs[doc_id].replace(old_str, new_str)
 
-# TODO: Write a resource to return all doc id's
-# TODO: Write a resource to return the contents of a particular doc
+@mcp.resource(
+    "docs://document",
+    mime_type="application/json"
+)
+def list_docs() -> list[str]:
+    return list(docs.keys())
+
+
+@mcp.resource(
+    "docs://document/{doc_id}",
+    mime_type="text/plain"
+)
+def fetch_doc(doc_id: str) -> str:
+    if doc_id not in docs:
+        raise ValueError(f"Doc with id {doc_id} not found")
+    return docs[doc_id]
+
+
 # TODO: Write a prompt to rewrite a doc in markdown format
 # TODO: Write a prompt to summarize a doc
 
