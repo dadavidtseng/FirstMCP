@@ -1,10 +1,24 @@
+import os
+
 from anthropic import Anthropic
 from anthropic.types import Message
 
 
 class Claude:
     def __init__(self, model: str):
-        self.client = Anthropic()
+        # Get API key and base URL from environment
+        api_key = os.getenv('ANTHROPIC_API_KEY')
+        base_url = os.getenv('ANTHROPIC_BASE_URL')
+
+        # Initialize client with custom base URL if provided
+        if base_url:
+            self.client = Anthropic(
+                api_key=api_key,
+                base_url=base_url
+            )
+        else:
+            self.client = Anthropic(api_key=api_key)
+
         self.model = model
 
     def add_user_message(self, messages: list, message):
